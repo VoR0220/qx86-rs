@@ -1,6 +1,4 @@
 use std::collections::HashMap;
-use std::string::String;
-use std::fmt;
 
 use crate::vm::*;
 
@@ -9,21 +7,13 @@ use crate::vm::*;
 pub const WRITEABLE_MEMORY:u32 = 0x80000000;
 
 /// A simple buffer of memory for MemorySystem
-#[derive(Default, Debug)]
+#[derive(Default)]
 pub struct BufferMemory{
     pub memory: Vec<u8>,
 }
 
-
-
-impl fmt::Display for BufferMemory {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let formatted_vec = String::from_utf8(self.memory.clone()).unwrap();
-        write!(f, "{}", formatted_vec)
-    }
-}
 /// The system for tracking all memory within the VM
-#[derive(Default, Debug)]
+#[derive(Default)]
 pub struct MemorySystem{
     map: HashMap<u32, BufferMemory>
 }
@@ -65,7 +55,6 @@ impl MemorySystem{
     }
     /// This will get an area of memory as a slice of bytes
     pub fn get_memory(&self, address: u32) -> Result<&[u8], VMError> {
-        //println!("result: {:X}", address & 0xFFFF0000);
         match self.map.get(&(address & 0xFFFF0000)){
             Option::None => return Err(VMError::ReadUnloadedMemory(address)),
             Option::Some(m) =>  {
@@ -119,9 +108,7 @@ impl MemorySystem{
     pub fn get_u64(&self, address: u32) -> Result<u64, VMError>{
         use std::convert::TryInto;
         let m = self.get_sized_memory(address, 8)?;
-        println!("hit here in u64");
         let v: [u8; 8] = *(&m[0..8].try_into().unwrap());
-        println!("get_u64 result: {}", u64::from_le_bytes(v));
         Ok(u64::from_le_bytes(v))
     }
     /// Sets a single u8 in memory
